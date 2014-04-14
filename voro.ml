@@ -26,17 +26,17 @@ let edge_add chains line p q =
     [p] :: chains
   in let chains' = to_cur chains p (* Always goes onto current chain *)
   in
-    match line_seg_intersect line p q with
+    match LineSegment.intersects_line line (p, q) with
     | None -> chains'
     | Some m ->
-        if ptequal m p then
-          if ptonline line q then
+        if Point.equal m p then
+          if Line3.contains_point line q then
             (* Line coincident with edge. Doesn't count as intersection. *)
             chains'
           else
             (* Intersects at vertex, start new chain. *)
             to_new chains' p
-          else if ptequal m q then
+          else if Point.equal m q then
             (* Treat edges as half open; i.e., handle vertex q as part of next
              * edge. *)
             chains'

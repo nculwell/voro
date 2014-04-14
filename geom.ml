@@ -16,6 +16,11 @@ module Point = struct
   let x (p: t) = let x, _ = p in x
   let y (p: t) = let _, y = p in y
 
+  let equal pt1 pt2 =
+    let x1, y1 = pt1 in
+    let x2, y2 = pt2 in
+    fequal x1 x2 && fequal y1 y2
+
   let add pt1 pt2 =
     let x1, y1 = pt1 in
     let x2, y2 = pt2 in
@@ -120,12 +125,12 @@ module LineSegment = struct
 
   type t = Point.t * Point.t
 
-  let cmp_len_max ((ls1: t), (ls2: t)) =
+  let cmp_len_max ((ls1: t), (ls2: t)): float =
     let len1 = Point.distance ls1 in
     let len2 = Point.distance ls2 in
-    if len1 < len2 then 1
-    else if len1 > len2 then -1
-    else 0
+    if len1 < len2 then 1.0
+    else if len1 > len2 then -1.0
+    else 0.0
 
   let cmp_len (edge1, edge2) =
     -. (cmp_len_max (edge1, edge2))
@@ -136,9 +141,11 @@ module LineSegment = struct
    * return Some p. Caller warrants that the two points are not the same
    * point.
    *
-   * mx = px + u * (qx - px) my = py + u * (qy - py) a * mx + b * my = c
+   * mx = x1 + u * (x2 - x1)
+   * my = y1 + u * (y2 - y1)
+   * a * mx + b * my = c
    *
-   * u = (c - b * py - a * px) / (a * (qx - px) + b * (qy - py))
+   * u = (c - b * y1 - a * x1) / (a * (x2 - x1) + b * (y2 - y1))
    *)
   let intersects_line
       ((a, b, c): Line3.t)
@@ -157,7 +164,7 @@ module LineSegment = struct
           fequal ((-. b *. dy) /. (a *. dx)) 1.0
       in
       if parallel then (* special case when segment & line are parallel *)
-        if Line3.contains_point (a, b, c) then
+        if Line3.contains_point (a, b, c) (x1, y1) then
           Some (x1, y1) (* coincident *)
         else
           None (* non-coincident *)
@@ -168,7 +175,7 @@ module LineSegment = struct
         else if fequal u 1.0 then
           Some (x2, y2)
         else if u >= 0.0 && u <= 1.0 then
-          Some (px +. u *. dx, y1 +. u *. dy)
+          Some (x1 +. u *. dx, y1 +. u *. dy)
         else
           None (* outside this segment *)
 
