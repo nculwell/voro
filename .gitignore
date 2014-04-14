@@ -1,0 +1,6 @@
+_build
+tags
+*.cm[oi]
+scratch
+*.byte
+.*.swp

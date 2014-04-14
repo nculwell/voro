@@ -1,10 +1,13 @@
 
 module A = BatArray
+module L = BatList
 
 type winding =
-| WINDING_CLOCKWISE
-| WINDING_COUNTERCLOCKWISE
-| WINDING_NONE
+| WindingClockwise
+| WindingCounterclockwise
+| WindingNone
+
+let fequal a b = abs_float (a -. b) < 0.000000015
 
 module Point = struct
 
@@ -32,9 +35,34 @@ module Point = struct
 
 end
 
+module Size = struct
+  type t = float * float
+
+  let area (s: t): float = let w, h = s in w *. h
+end
+
+module Line3 = struct
+
+  (* (a, b, c) denotes the line given by ax + by = c *)
+  type t = float * float * float
+
+  let contains_point ((a, b, c): t) ((x, y): Point.t) =
+    if fequal c 0.0 then
+      if fequal b 0.0 || fequal y 0.0 then
+        fequal x 0.0
+      else
+        fequal ((-. a *. x) /. (b *. y)) 1.0
+    else
+      fequal ((a *. x +. b *. y) /. c) 1.0
+
+end
+
 module Polygon = struct
 
   type t = Point.t array
+
+  let from_list (points: Point.t list): t =
+    A.of_list points
 
   (*
   let signed_double_area (poly: t) =
@@ -64,9 +92,27 @@ module Polygon = struct
 
   let winding poly =
     match signed_double_area poly with
-    | sda when sda < 0.0 -> WINDING_CLOCKWISE
-    | sda when sda > 0.0 -> WINDING_COUNTERCLOCKWISE
-    | _ -> WINDING_NONE
+    | sda when sda < 0.0 -> WindingClockwise
+    | sda when sda > 0.0 -> WindingCounterclockwise
+    | _ -> WindingNone
+
+end
+
+module HPlane3 = struct
+
+  (* (a, b, c) denotes the halfplane given by ax + by <= c *)
+  type t = float * float * float
+
+  let contains_point ((a, b, c): t) ((x, y): Point.t): bool =
+    Line3.contains_point (a, b, c) (x, y)
+      || a *. x +. b *. y <= c
+
+  let contains_polygon (hp: t) (poly: Polygon.t): bool =
+    try
+      let pt = A.find (fun p -> not (Line3.contains_point hp p)) poly in
+      contains_point hp pt
+    with
+    | Not_found -> true (* degenerate polygon *)
 
 end
 
@@ -82,7 +128,49 @@ module LineSegment = struct
     else 0
 
   let cmp_len (edge1, edge2) =
-    -(cmp_len_max (edge1, edge2))
+    -. (cmp_len_max (edge1, edge2))
+
+
+  (* If the line intersects the segment at point m, return Some m.  Otherwise
+   * return None. By convention, if the segment is coincident with the line,
+   * return Some p. Caller warrants that the two points are not the same
+   * point.
+   *
+   * mx = px + u * (qx - px) my = py + u * (qy - py) a * mx + b * my = c
+   *
+   * u = (c - b * py - a * px) / (a * (qx - px) + b * (qy - py))
+   *)
+  let intersects_line
+      ((a, b, c): Line3.t)
+      (((x1, y1), (x2, y2)): t)
+      : Point.t option =
+    if x1 = x2 && y1 = y2 then
+      failwith "Points in line segment are the same."
+    else
+      let dx, dy = x2 -. x1, y2 -. y1 in
+      let parallel =
+        if fequal a 0.0 then
+          fequal dy 0.0
+        else if fequal dx 0.0 then
+          fequal b 0.0
+        else
+          fequal ((-. b *. dy) /. (a *. dx)) 1.0
+      in
+      if parallel then (* special case when segment & line are parallel *)
+        if Line3.contains_point (a, b, c) then
+          Some (x1, y1) (* coincident *)
+        else
+          None (* non-coincident *)
+      else
+        let u = (c -. b *. y1 -. a *. x1) /. (a *. dx +. b *. dy) in
+        if fequal u 0.0 then
+          Some (x1, y1)
+        else if fequal u 1.0 then
+          Some (x2, y2)
+        else if u >= 0.0 && u <= 1.0 then
+          Some (px +. u *. dx, y1 +. u *. dy)
+        else
+          None (* outside this segment *)
 
 end
 
