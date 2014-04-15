@@ -94,10 +94,10 @@ let site_site_hplane (a, b) (c, d) =
   else
     HPlane3.flip hplane
 
-(* Site is a Voronoi site with the given cell as calculated so far.  Add an
- * edge to the cell for the given external site and return the new cell. If
- * xsite isn't close enough to site, it won't affect the cell shape (no new
- * edge will be added). If xsite is the same as site, just return the cell. *)
+(* Site is a Voronoi site with the given cell as calculated so far. Add an edge
+ * to the cell for the given external site and return the new cell. If xsite
+ * isn't close enough to site, it won't affect the cell shape (no new edge will
+ * be added). If xsite is the same as site, just return the cell. *)
 let site_add_edge site cell xsite : Polygon.t =
   if Point.equal site xsite then
     cell
