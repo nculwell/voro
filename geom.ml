@@ -119,6 +119,8 @@ module HPlane3 = struct
     with
     | Not_found -> true (* degenerate polygon *)
 
+  let flip ((a, b, c): t): t = (-. a, -. b, -. c)
+
 end
 
 module LineSegment = struct

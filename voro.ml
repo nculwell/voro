@@ -16,7 +16,7 @@ open Geom
  * given line. If the line intersects the edge at m, end the current chain at m
  * and start a new chain at m. If it intersects the middle of the edge, split
  * the edge at m first. If there's no intersection, just add to current chain.
-*)
+ *)
 let edge_add chains line p q =
   let to_cur chains p =
     match chains with
@@ -45,8 +45,7 @@ let edge_add chains line p q =
           to_new (to_cur chains' m) m
 
 (* The line might split the given convex polygon into two parts, in which case
- * return them. Otherwise return the original polygon and an empty polygon.
-*)
+ * return them. Otherwise return the original polygon and an empty polygon. *)
 let poly_line_split poly line : Polygon.t * Polygon.t =
     match poly with
     | [] -> ([], [])
@@ -65,8 +64,7 @@ let poly_line_split poly line : Polygon.t * Polygon.t =
         | _ -> (poly, [])
 
 (* Intersect the given convex polygon and the given half plane, giving a new
- * convex polygon (or possibly an empty one).
-*)
+ * convex polygon (or possibly an empty one). *)
 let poly_hplane_intersect poly hplane : poly =
   let (p1, p2) =
     match poly_line_split poly hplane with
@@ -76,21 +74,22 @@ let poly_hplane_intersect poly hplane : poly =
   if polyinhplane hplane p1 then p1 else p2
 
 (* Return the halfplane containing (a, b), with its boundary halfway between
- * (a, b) and (c, d).
-*)
+ * (a, b) and (c, d). *)
 let site_site_hplane (a, b) (c, d) =
-  let flip (a, b, c) = (-. a, -. b, -. c) in
   let hplane =
     (2.0 *. (c -. a),
      2.0 *. (d -. b),
      c *. c -. a *. a +. d *. d -. b *. b)
   in
-  if ptinhplane hplane (a, b) then hplane else flip hplane
+  if HPlane3.contains_point hplane (a, b) then
+    hplane
+  else
+    HPlane3.flip hplane
 
-(* Site is a Voronoi site with the given cell as calculated so far.  * Add an
-edge to the cell for the given external site and return * the new cell. If
-xsite isn't close enough to site, it won't * affect the cell shape (no new edge
-will be added). If xsite is * the same as site, just return the cell.  *)
+(* Site is a Voronoi site with the given cell as calculated so far.  Add an
+ * edge to the cell for the given external site and return the new cell. If
+ * xsite isn't close enough to site, it won't affect the cell shape (no new
+ * edge will be added). If xsite is the same as site, just return the cell. *)
 let site_add_edge site cell xsite : poly =
   if ptequal site xsite then
     cell
