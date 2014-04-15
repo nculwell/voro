@@ -107,13 +107,13 @@ let site_add_edge site cell xsite : Polygon.t =
 (* Calculate the cells for the given Voronoi sites. Return a list of polygons
  * corresponding to the cells. *)
 let cells_make 
+    (margin: float)
     (size: Size.t)
     (sites: Point.t list)
     : Polygon.t list =
-  let margin = 10.0 in
   let (w, h) = size in
   let screen = Polygon.from_list
-    [(-. margin, -. margin); (w +. margin, -. margin);
+    [(-. margin, -. margin);     (w +. margin, -. margin);
      (w +. margin, h +. margin); (-. margin, h +. margin)]
   in
   let make1 site =

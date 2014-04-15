@@ -103,6 +103,11 @@ module Polygon = struct
     | sda when sda > 0.0 -> WindingCounterclockwise
     | _ -> WindingNone
 
+  let as_string (poly: t): string =
+    "Polygon ("
+      ^ (poly |> A.map Point.as_string |> A.to_list |> String.concat ", ")
+      ^ ")"
+
 end
 
 module HPlane3 = struct
