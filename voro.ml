@@ -44,34 +44,42 @@ let edge_add chains line p q =
           (* Split at intersection point. *)
           to_new (to_cur chains' m) m
 
+(* List-based implementation of poly_line_split. *)
+let poly_line_split_w_list (poly: Point.t list) line
+    : Point.t list * Point.t list =
+  let poly = poly in
+  match poly with
+  | [] -> ([], [])
+  | p0 :: _ ->
+      let rec findchains chains pts =
+        match pts with
+        | [] ->
+            List.rev_map List.rev chains
+        | p :: [] ->
+            findchains (edge_add chains line p p0) []
+        | p :: (q :: _ as rest) ->
+            findchains (edge_add chains line p q) rest
+      in
+      match findchains [[]] poly with
+      | [s0; s1; s2] -> (s0 @ s2, s1)
+      | _ -> (poly, [])
+
 (* The line might split the given convex polygon into two parts, in which case
  * return them. Otherwise return the original polygon and an empty polygon. *)
-let poly_line_split poly line : Polygon.t * Polygon.t =
-    match poly with
-    | [] -> ([], [])
-    | p0 :: _ ->
-        let rec findchains chains pts =
-          match pts with
-          | [] ->
-              List.rev_map List.rev chains
-          | p :: [] ->
-              findchains (edge_add chains line p p0) []
-          | p :: (q :: _ as rest) ->
-              findchains (edge_add chains line p q) rest
-        in
-        match findchains [[]] poly with
-        | [s0; s1; s2] -> (s0 @ s2, s1)
-        | _ -> (poly, [])
+let poly_line_split (poly: Polygon.t) (line: Line3.t) : Polygon.t * Polygon.t =
+  let a, b = poly_line_split_w_list (A.to_list poly) line in
+  (A.of_list a, A.of_list b)
 
 (* Intersect the given convex polygon and the given half plane, giving a new
  * convex polygon (or possibly an empty one). *)
-let poly_hplane_intersect poly hplane : poly =
+let poly_hplane_intersect poly hplane : Polygon.t =
   let (p1, p2) =
     match poly_line_split poly hplane with
-    | ([], p) -> (p, []) (* Test the nonempty one if there is one *)
+    | (e, p) when e = Polygon.empty ->
+        (p, Polygon.empty) (* Test the nonempty one if there is one *)
     | p1p2 -> p1p2
   in
-  if polyinhplane hplane p1 then p1 else p2
+  if HPlane3.contains_polygon hplane p1 then p1 else p2
 
 (* Return the halfplane containing (a, b), with its boundary halfway between
  * (a, b) and (c, d). *)
@@ -90,8 +98,8 @@ let site_site_hplane (a, b) (c, d) =
  * edge to the cell for the given external site and return the new cell. If
  * xsite isn't close enough to site, it won't affect the cell shape (no new
  * edge will be added). If xsite is the same as site, just return the cell. *)
-let site_add_edge site cell xsite : poly =
-  if ptequal site xsite then
+let site_add_edge site cell xsite : Polygon.t =
+  if Point.equal site xsite then
     cell
   else
     poly_hplane_intersect cell (site_site_hplane site xsite)
@@ -101,11 +109,12 @@ let site_add_edge site cell xsite : poly =
 let cells_make 
     (size: Size.t)
     (sites: Point.t list)
-    : Point.t list list =
+    : Polygon.t list =
   let margin = 10.0 in
   let (w, h) = size in
-  let screen = [(-. margin, -. margin); (wd +. margin, -. margin);
-     (wd +. margin, ht +. margin); (-. margin, ht +. margin)]
+  let screen = Polygon.from_list
+    [(-. margin, -. margin); (w +. margin, -. margin);
+     (w +. margin, h +. margin); (-. margin, h +. margin)]
   in
   let make1 site =
     List.fold_left (site_add_edge site) screen sites

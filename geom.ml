@@ -66,6 +66,8 @@ module Polygon = struct
 
   type t = Point.t array
 
+  let empty: t = [| |]
+
   let from_list (points: Point.t list): t =
     A.of_list points
 
