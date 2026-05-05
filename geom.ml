@@ -2,12 +2,24 @@
 module A = BatArray
 module L = BatList
 
+module LR = struct
+  type t = Left | Right
+  let other x = match x with
+    | Left -> Right
+    | Right -> Left
+  let as_string x = match x with
+    | Left -> "Left"
+    | Right -> "Right"
+end
+
 type winding =
 | WindingClockwise
 | WindingCounterclockwise
 | WindingNone
 
 let fequal a b = abs_float (a -. b) < 0.000000015
+
+let ifloor x = int_of_float (floor x)
 
 module Point = struct
 
