@@ -27,5 +27,8 @@ let draw_polys ((w, h): Size.t)
   let ctx = Cairo.create surface in
   Cairo.set_line_width ctx 1.;
   L.iter (draw_poly ctx) polys;
-  Cairo.PNG.write surface (filename ^ ".png")
+  let filename_with_ext = filename ^ ".png" in
+  print_string "WRITING OUTPUT: ";
+  print_endline filename_with_ext;
+  Cairo.PNG.write surface filename_with_ext
 
