@@ -1,8 +1,8 @@
 # Voronoi diagram generator
 
-This program generates random Voronoi diagrams.
+This program generates random [Voronoi diagrams](https://en.wikipedia.org/wiki/Voronoi_diagram).
 
-It uses Fortune's Algorithm. As I recall, I translated Fortune's original code from C into OCaml.
+It uses [Fortune's Algorithm](https://en.wikipedia.org/wiki/Fortune%27s_algorithm). As I recall, I translated Fortune's original code from C into OCaml.
 
 ## Set up and run
 
