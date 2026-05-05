@@ -12,10 +12,10 @@ After installing OPAM, you should be able to build and run thus:
 
 The default random seed is 0, which gives you the same diagram every time. To change it, you can specify a seed on the command line:
 
-./test 300
+    ./test 300
 
 This uses 300 as the seed, giving you a different diagram.
 
 Here is an example of the output for seed 0:
 
-![Voronoi diagram with seed 0](diagram_0.png)
+![Voronoi diagram with seed 0](diagram_seed_0.png)
