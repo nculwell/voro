@@ -1,8 +1,10 @@
-= Voronoi diagram generator
+# Voronoi diagram generator
 
 This program generates random Voronoi diagrams.
 
 It uses Fortune's Algorithm. As I recall, I translated Fortune's original code from C into OCaml.
+
+## Set up and run
 
 You'll need [OPAM](https://opam.ocaml.org/) installed in order to run this.
 
