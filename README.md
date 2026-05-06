@@ -1,6 +1,6 @@
 # Voronoi diagram generator
 
-This program generates random [Voronoi diagrams](https://en.wikipedia.org/wiki/Voronoi_diagram).
+This program generates random [Voronoi diagrams](https://en.wikipedia.org/wiki/Voronoi_diagram). I was inspired by [Amit Patel's Polygonal Map Generation for Games article on the the Red Blob Games blog](http://www-cs-students.stanford.edu/~amitp/game-programming/polygon-map-generation/), which describes how you can use Voronoi diagrams to generate realistic-looking maps.
 
 It uses [Fortune's Algorithm](https://en.wikipedia.org/wiki/Fortune%27s_algorithm). As I recall, I translated Fortune's original code from C into OCaml.
 
